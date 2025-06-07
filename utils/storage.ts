@@ -1,4 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import { UserProfile } from '@/stores/userStore';
 
@@ -50,5 +51,51 @@ export async function clearUserProfile(): Promise<void> {
     }
   } catch (error) {
     console.error('Error clearing user profile:', error);
+  }
+}
+
+// Save workout plan to storage
+export async function saveCurrentPlan(plan: any): Promise<void> {
+  try {
+    const jsonValue = JSON.stringify(plan);
+
+    if (Platform.OS === 'web') {
+      localStorage.setItem('tona_current_plan', jsonValue);
+    } else {
+      await AsyncStorage.setItem('tona_current_plan', jsonValue);
+    }
+  } catch (error) {
+    console.error('Error saving workout plan:', error);
+  }
+}
+
+// Load workout plan from storage
+export async function loadCurrentPlan(): Promise<any | null> {
+  try {
+    let jsonValue;
+
+    if (Platform.OS === 'web') {
+      jsonValue = localStorage.getItem('tona_current_plan');
+    } else {
+      jsonValue = await AsyncStorage.getItem('tona_current_plan');
+    }
+
+    return jsonValue != null ? JSON.parse(jsonValue) : null;
+  } catch (error) {
+    console.error('Error loading workout plan:', error);
+    return null;
+  }
+}
+
+// Clear workout plan from storage
+export async function clearCurrentPlan(): Promise<void> {
+  try {
+    if (Platform.OS === 'web') {
+      localStorage.removeItem('tona_current_plan');
+    } else {
+      await AsyncStorage.removeItem('tona_current_plan');
+    }
+  } catch (error) {
+    console.error('Error clearing workout plan:', error);
   }
 }
