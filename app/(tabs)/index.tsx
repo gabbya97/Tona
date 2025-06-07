@@ -94,6 +94,12 @@ export default function HomeScreen() {
               total={totalWorkoutsThisWeek}
               totalWorkouts={workoutHistory.length}
             />
+            <Button
+              title="Change My Plan"
+              type="outline"
+              onPress={() => router.push('/plan/start')}
+              style={styles.changePlanButton}
+            />
           </View>
         )}
       </ScrollView>
@@ -150,6 +156,10 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   createButton: {
+    width: '100%',
+  },
+  changePlanButton: {
+    marginTop: 20,
     width: '100%',
   },
   planContainer: {

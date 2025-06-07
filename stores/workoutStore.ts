@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { saveCurrentPlan } from '@/utils/storage';
 
 export interface Exercise {
   name: string;
@@ -53,7 +54,8 @@ interface WorkoutState {
 export const useWorkoutStore = create<WorkoutState>((set) => ({
   currentPlan: null,
   workoutHistory: [],
-  setCurrentPlan: (plan) =>
+  setCurrentPlan: (plan) => {
+    saveCurrentPlan(plan);
     set({
       currentPlan: {
         ...plan,
@@ -62,7 +64,8 @@ export const useWorkoutStore = create<WorkoutState>((set) => ({
           day: Number(w.day)
         })) || []
       }
-    }),
+    });
+  },
   addWorkoutHistory: (workout) => 
     set((state) => ({
       workoutHistory: [workout, ...state.workoutHistory]

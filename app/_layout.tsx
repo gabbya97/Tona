@@ -17,14 +17,17 @@ import {
   Montserrat_700Bold
 } from '@expo-google-fonts/montserrat';
 import { useAuthStore } from '@/stores/authStore';
+import { useWorkoutStore } from '@/stores/workoutStore';
+import { loadCurrentPlan } from '@/utils/storage';
 
 // Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   useFrameworkReady();
-  
+
   const { isAuthenticated } = useAuthStore();
+  const { setCurrentPlan } = useWorkoutStore();
 
   const [fontsLoaded, fontError] = useFonts({
     'Outfit-Regular': Outfit_400Regular,
@@ -43,6 +46,16 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);
+
+  // Load saved workout plan on startup
+  useEffect(() => {
+    (async () => {
+      const storedPlan = await loadCurrentPlan();
+      if (storedPlan) {
+        setCurrentPlan(storedPlan);
+      }
+    })();
+  }, []);
 
   // Return null to keep splash screen visible while fonts load
   if (!fontsLoaded && !fontError) {
