@@ -227,23 +227,41 @@ export function generateWorkoutPlan(userProfile: UserProfile): WorkoutPlan {
     workoutDuration = 45
   } = userProfile;
   
-  // Determine the split type based on days per week
+  // Determine the split type and workout rotation
   let splitType: string;
   let workoutTypes: string[];
+  let workoutCategories: string[];
   
-  if (daysPerWeek <= 3) {
+  if (goal.toLowerCase().includes('glute')) {
+    // Glute focused rotation avoiding consecutive lower body days
+    splitType = 'glute focus';
+    const rotation = [
+      { name: 'Glutes A', category: 'lower' },
+      { name: 'Upper Body', category: 'upper' },
+      { name: 'Glutes B', category: 'lower' },
+      { name: 'Core + Conditioning', category: 'full' },
+      { name: 'Full Body', category: 'full' },
+      { name: 'Glutes C', category: 'lower' }
+    ];
+    const selected = rotation.slice(0, daysPerWeek);
+    workoutTypes = selected.map(r => r.name);
+    workoutCategories = selected.map(r => r.category);
+  } else if (daysPerWeek <= 3) {
     // Full body workouts for 3 or fewer days
     splitType = 'full';
     workoutTypes = Array(daysPerWeek).fill('Full Body');
+    workoutCategories = Array(daysPerWeek).fill('full');
   } else if (daysPerWeek === 4) {
     // Upper/lower split for 4 days
     splitType = 'upper/lower';
     workoutTypes = ['Upper Body', 'Lower Body', 'Upper Body', 'Lower Body'];
+    workoutCategories = ['upper', 'lower', 'upper', 'lower'];
   } else {
     // Push/Pull/Legs for 5+ days
     splitType = 'push/pull/legs';
-    workoutTypes = ['Push', 'Pull', 'Legs', 'Push', 'Pull', 'Legs', 'Rest'];
-    workoutTypes = workoutTypes.slice(0, daysPerWeek);
+    const types = ['Push', 'Pull', 'Legs', 'Push', 'Pull', 'Legs', 'Rest'];
+    workoutTypes = types.slice(0, daysPerWeek);
+    workoutCategories = workoutTypes.map(t => t.toLowerCase());
   }
   
   // Determine workout schedule (which days of the week)
@@ -257,19 +275,8 @@ export function generateWorkoutPlan(userProfile: UserProfile): WorkoutPlan {
   
   // Generate workouts for each day
   const workouts: Workout[] = workoutDays.map((day, index) => {
-    const workoutType = workoutTypes[index].toLowerCase();
-    
-    // Map workout type to exercise category
-    let exerciseCategory: string;
-    if (workoutType === 'full body') {
-      exerciseCategory = 'full';
-    } else if (workoutType === 'upper body') {
-      exerciseCategory = 'upper';
-    } else if (workoutType === 'lower body') {
-      exerciseCategory = 'lower';
-    } else {
-      exerciseCategory = workoutType; // push, pull, legs
-    }
+    const workoutName = workoutTypes[index];
+    const exerciseCategory = workoutCategories[index];
     
     // Get exercises for this workout
     let workoutExercises: Exercise[] = [];
@@ -288,7 +295,7 @@ export function generateWorkoutPlan(userProfile: UserProfile): WorkoutPlan {
     }
 
     // Filter based on goal
-    if (goal.toLowerCase().includes('glute')) {
+    if (goal.toLowerCase().includes('glute') && workoutName.toLowerCase().includes('glute')) {
       const keywords = ['glute', 'hip', 'lunge', 'squat', 'deadlift'];
       const focused = workoutExercises.filter((ex) =>
         keywords.some((k) => ex.name.toLowerCase().includes(k))
