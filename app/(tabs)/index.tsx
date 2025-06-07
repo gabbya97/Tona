@@ -17,21 +17,18 @@ export default function HomeScreen() {
   const { currentPlan, workoutHistory } = useWorkoutStore();
 
   const today = new Date();
-  const todayDay = today.getDay();
 
-  console.log('Today getDay():', todayDay);
-  currentPlan?.workouts?.forEach(w =>
-    console.log('Workout day:', w.day, 'type:', typeof w.day)
-  );
+  // Determine today's workout based on the plan order rather than the
+  // numerical day of the week. This prevents mismatches when the plan
+  // length doesn't align with a 7‑day week.
+  const todayIndex = new Date().getDay() % (currentPlan?.workouts?.length || 1);
+  const todayWorkout = currentPlan?.workouts?.[todayIndex];
 
-  const todayWorkout = currentPlan?.workouts?.find(workout => {
-    const match = Number(workout.day) === todayDay;
-    console.log(
-      `Comparing today (${todayDay}) with workout day (${workout.day}) ->`,
-      match
-    );
-    return match;
-  });
+  // A workout is considered available today if it's not a rest day and has
+  // at least one exercise.
+  const hasWorkoutToday =
+    todayWorkout?.name !== 'Rest' &&
+    (todayWorkout?.exercises?.length || 0) > 0;
 
   const startWorkout = () => {
     router.push('/workout/session');
@@ -81,7 +78,7 @@ export default function HomeScreen() {
               {getGreeting()}, {userData?.fullName?.split(' ')[0]} 👋
             </Text>
 
-            {todayWorkout ? (
+            {hasWorkoutToday ? (
               <DailyWorkoutCard workout={todayWorkout} onPress={startWorkout} />
             ) : (
               <View style={styles.emptyStateContent}>
