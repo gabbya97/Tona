@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { X, Check, Play, Pause, ChevronDown, ChevronUp, Clock } from 'lucide-react-native';
 import { theme } from '@/constants/theme';
 import { useWorkoutStore } from '@/stores/workoutStore';
@@ -29,9 +29,14 @@ export default function WorkoutSessionScreen() {
     ).length || 0;
 
   const nextIndex = completedThisWeek.length + skippedCount;
-  const todayWorkout =
-    currentPlan?.workouts && nextIndex < currentPlan.workouts.length
-      ? currentPlan.workouts[nextIndex]
+
+  const params = useLocalSearchParams<{ id?: string }>();
+  const paramIndex = params?.id ? parseInt(Array.isArray(params.id) ? params.id[0] : params.id, 10) : NaN;
+  const selectedIndex = !isNaN(paramIndex) ? paramIndex : nextIndex;
+
+  const selectedWorkout =
+    currentPlan?.workouts && selectedIndex < currentPlan.workouts.length
+      ? currentPlan.workouts[selectedIndex]
       : null;
   
   const [workoutStarted, setWorkoutStarted] = useState(false);
@@ -43,10 +48,10 @@ export default function WorkoutSessionScreen() {
   const [exerciseData, setExerciseData] = useState([]);
   
   useEffect(() => {
-    if (todayWorkout) {
+    if (selectedWorkout) {
       // Initialize exercise data
       setExerciseData(
-        todayWorkout.exercises.map(exercise => ({
+        selectedWorkout.exercises.map(exercise => ({
           ...exercise,
           sets: Array(exercise.sets).fill().map(() => ({
             reps: 0,
@@ -56,7 +61,7 @@ export default function WorkoutSessionScreen() {
         }))
       );
     }
-  }, [todayWorkout]);
+  }, [selectedWorkout]);
   
   useEffect(() => {
     let interval;
@@ -155,8 +160,8 @@ export default function WorkoutSessionScreen() {
       id: Date.now().toString(),
       date: new Date().toISOString(),
       duration: currentTime,
-      name: todayWorkout.name,
-      type: todayWorkout.type,
+      name: selectedWorkout.name,
+      type: selectedWorkout.type,
       exercises: exerciseData.map(exercise => ({
         name: exercise.name,
         sets: exercise.sets.filter(set => set.completed).map(set => ({
@@ -175,7 +180,7 @@ export default function WorkoutSessionScreen() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
   
-  if (!todayWorkout) {
+  if (!selectedWorkout) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.noWorkoutContainer}>
@@ -219,7 +224,7 @@ export default function WorkoutSessionScreen() {
           <X size={24} color={theme.colors.text} />
         </TouchableOpacity>
         
-        <Text style={styles.headerTitle}>{todayWorkout.name}</Text>
+        <Text style={styles.headerTitle}>{selectedWorkout.name}</Text>
         
         {workoutStarted && !workoutCompleted && (
           <TouchableOpacity 
@@ -234,24 +239,24 @@ export default function WorkoutSessionScreen() {
       {!workoutStarted ? (
         <View style={styles.startContainer}>
           <View style={styles.workoutDetails}>
-            <Text style={styles.workoutType}>{todayWorkout.type}</Text>
-            <Text style={styles.workoutName}>{todayWorkout.name}</Text>
+            <Text style={styles.workoutType}>{selectedWorkout.type}</Text>
+            <Text style={styles.workoutName}>{selectedWorkout.name}</Text>
             <View style={styles.workoutMeta}>
               <View style={styles.metaItem}>
                 <Clock size={16} color={theme.colors.textLight} />
                 <Text style={styles.metaText}>
-                  {todayWorkout.duration || 45} min
+                  {selectedWorkout.duration || 45} min
                 </Text>
               </View>
               <Text style={styles.metaDivider}>•</Text>
               <Text style={styles.metaText}>
-                {todayWorkout.exercises.length} exercises
+                {selectedWorkout.exercises.length} exercises
               </Text>
             </View>
           </View>
           
           <ScrollView style={styles.exercisePreview}>
-            {todayWorkout.exercises.map((exercise, index) => (
+            {selectedWorkout.exercises.map((exercise, index) => (
               <View key={index} style={styles.exercisePreviewItem}>
                 <View style={styles.exerciseNumberContainer}>
                   <Text style={styles.exerciseNumber}>{index + 1}</Text>
