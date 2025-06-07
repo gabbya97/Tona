@@ -22,17 +22,6 @@ const GoalSelector: React.FC<GoalSelectorProps> = ({ selected, onSelect }) => {
       ),
     },
     {
-      id: 'muscle',
-      title: 'Muscle',
-      description: 'Emphasis on muscle growth and definition',
-      icon: (isSelected: boolean) => (
-        <Zap 
-          size={28} 
-          color={isSelected ? theme.colors.primary : theme.colors.textLight} 
-        />
-      ),
-    },
-    {
       id: 'toning',
       title: 'Toning',
       description: 'Focus on sculpting and defining your physique',

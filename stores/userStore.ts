@@ -8,7 +8,7 @@ export interface UserProfile {
   equipment?: string[];
   daysPerWeek?: number;
   workoutDuration?: number;
-  goal?: 'strength' | 'toning' | 'muscle' | 'confidence';
+  goal?: 'strength' | 'toning' | 'confidence';
   settings?: {
     workoutReminders?: boolean;
     progressUpdates?: boolean;
