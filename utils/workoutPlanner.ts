@@ -257,9 +257,9 @@ export function generateWorkoutPlan(userProfile: UserProfile): WorkoutPlan {
     workoutTypes = ['Upper Body', 'Lower Body', 'Upper Body', 'Lower Body'];
     workoutCategories = ['upper', 'lower', 'upper', 'lower'];
   } else {
-    // Push/Pull/Legs for 5+ days
+    // Push/Pull/Legs for 5+ days (no built-in rest days)
     splitType = 'push/pull/legs';
-    const types = ['Push', 'Pull', 'Legs', 'Push', 'Pull', 'Legs', 'Rest'];
+    const types = ['Push', 'Pull', 'Legs', 'Push', 'Pull', 'Legs'];
     workoutTypes = types.slice(0, daysPerWeek);
     workoutCategories = workoutTypes.map(t => t.toLowerCase());
   }
@@ -351,23 +351,8 @@ export function generateWorkoutPlan(userProfile: UserProfile): WorkoutPlan {
 
 // Helper function to generate workout schedule
 function generateWorkoutSchedule(daysPerWeek: number): number[] {
-  const days: number[] = [];
-  
-  // Default to Mon, Wed, Fri for 3 days
-  if (daysPerWeek === 3) {
-    return [1, 3, 5]; // Monday, Wednesday, Friday
-  }
-  
-  // For other frequencies, distribute evenly with Sunday as rest day
-  const availableDays = [1, 2, 3, 4, 5, 6]; // Monday to Saturday
-  
-  // If more than 6 days, include Sunday
-  if (daysPerWeek > 6) {
-    availableDays.unshift(0);
-  }
-  
-  // Take the first n days
-  return availableDays.slice(0, daysPerWeek);
+  // Simply return sequential indexes starting from 0
+  return Array.from({ length: daysPerWeek }, (_, i) => i);
 }
 
 function capitalizeFirstLetter(string: string): string {

@@ -6,7 +6,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import { theme } from '@/constants/theme';
 import Button from '@/components/ui/Button';
-import { getGreeting } from '@/utils/helpers';
+import { getGreeting, getWeekStart } from '@/utils/helpers';
 import { Dumbbell } from 'lucide-react-native';
 import DailyWorkoutCard from '@/components/home/DailyWorkoutCard';
 import ProgressStats from '@/components/home/ProgressStats';
@@ -16,12 +16,7 @@ export default function HomeScreen() {
   const { userData } = useAuthStore();
   const { currentPlan, workoutHistory, skippedWorkouts, addSkippedWorkout } = useWorkoutStore();
 
-  const today = new Date();
-
-  // Determine start of the week (Monday)
-  const startOfWeek = new Date();
-  startOfWeek.setHours(0, 0, 0, 0);
-  startOfWeek.setDate(startOfWeek.getDate() - ((startOfWeek.getDay() + 6) % 7));
+  const startOfWeek = getWeekStart();
 
   // Workouts completed this week
   const completedThisWeek = workoutHistory?.filter(w => {
@@ -35,12 +30,9 @@ export default function HomeScreen() {
 
   const allDone = completedThisWeek.length + skippedCount >= totalPerWeek;
 
-  const todayDay = today.getDay();
-  const todayIndex = currentPlan?.workouts?.findIndex(w => Number(w.day) === todayDay) ?? -1;
-
-  const hasWorkoutToday = todayIndex >= 0 && todayIndex < totalPerWeek;
-  const hasWorkoutRemaining = hasWorkoutToday && !allDone;
-  const todayWorkout = hasWorkoutToday ? currentPlan?.workouts?.[todayIndex] : null;
+  const nextIndex = completedThisWeek.length + skippedCount;
+  const hasWorkoutRemaining = nextIndex < totalPerWeek;
+  const todayWorkout = hasWorkoutRemaining ? currentPlan?.workouts?.[nextIndex] : null;
 
   const startWorkout = () => {
     router.push('/workout/session');
@@ -82,13 +74,15 @@ export default function HomeScreen() {
               <DailyWorkoutCard
                 workout={todayWorkout}
                 onPress={startWorkout}
-                onSkip={() => addSkippedWorkout(todayIndex, startOfWeek.toISOString())}
+                onSkip={() => addSkippedWorkout(nextIndex, startOfWeek.toISOString())}
               />
             ) : (
               <View style={styles.emptyStateContent}>
                 {allDone ? (
                   <>
-                    <Text style={styles.emptyTitle}>You’ve completed this week’s plan!</Text>
+                    <Text style={styles.emptyTitle}>
+                      You’ve completed your plan for the week! Want to repeat one or add a bonus workout?
+                    </Text>
                     <Button
                       title="Try a bonus workout"
                       onPress={() => router.push('/workout/bonus')}
@@ -96,9 +90,7 @@ export default function HomeScreen() {
                       style={styles.createButton}
                     />
                   </>
-                ) : (
-                  <Text style={styles.emptyTitle}>Rest day – no workout scheduled.</Text>
-                )}
+                ) : null}
               </View>
             )}
 
