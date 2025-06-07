@@ -14,37 +14,32 @@ import ProgressStats from '@/components/home/ProgressStats';
 export default function HomeScreen() {
   const router = useRouter();
   const { userData } = useAuthStore();
-  const { currentPlan, workoutHistory } = useWorkoutStore();
+  const { currentPlan, workoutHistory, skippedWorkouts, addSkippedWorkout } = useWorkoutStore();
 
   const today = new Date();
 
-  // Determine today's workout based on the plan order rather than the
-  // numerical day of the week. This prevents mismatches when the plan
-  // length doesn't align with a 7‑day week.
-  const todayIndex = new Date().getDay() % (currentPlan?.workouts?.length || 1);
-  const todayWorkout = currentPlan?.workouts?.[todayIndex];
+  // Determine start of the week (Monday)
+  const startOfWeek = new Date();
+  startOfWeek.setHours(0, 0, 0, 0);
+  startOfWeek.setDate(startOfWeek.getDate() - ((startOfWeek.getDay() + 6) % 7));
 
-  // A workout is considered available today if it's not a rest day and has
-  // at least one exercise.
-  const hasWorkoutToday =
-    todayWorkout?.name !== 'Rest' &&
-    (todayWorkout?.exercises?.length || 0) > 0;
+  // Workouts completed this week
+  const completedThisWeek = workoutHistory?.filter(w => {
+    const date = new Date(w.date);
+    return date >= startOfWeek;
+  }) || [];
+
+  const skippedCount = skippedWorkouts?.filter(w => w.weekStart === startOfWeek.toISOString()).length || 0;
+  const currentIndex = completedThisWeek.length + skippedCount;
+
+  const totalPerWeek = currentPlan?.workouts?.length || 0;
+
+  const hasWorkoutRemaining = currentIndex < totalPerWeek;
+  const todayWorkout = currentPlan?.workouts?.[currentIndex];
 
   const startWorkout = () => {
     router.push('/workout/session');
   };
-
-  const startOfWeek = new Date(today);
-  startOfWeek.setDate(today.getDate() - today.getDay());
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(startOfWeek.getDate() + 6);
-
-  const completedThisWeek = workoutHistory.filter(h => {
-    const d = new Date(h.date);
-    return d >= startOfWeek && d <= endOfWeek;
-  }).length;
-
-  const totalWorkoutsThisWeek = currentPlan?.workouts?.length || 0;
   
   return (
     <SafeAreaView style={styles.container}>
@@ -78,20 +73,27 @@ export default function HomeScreen() {
               {getGreeting()}, {userData?.fullName?.split(' ')[0]} 👋
             </Text>
 
-            {hasWorkoutToday ? (
-              <DailyWorkoutCard workout={todayWorkout} onPress={startWorkout} />
+            {hasWorkoutRemaining ? (
+              <DailyWorkoutCard
+                workout={todayWorkout}
+                onPress={startWorkout}
+                onSkip={() => addSkippedWorkout(currentIndex, startOfWeek.toISOString())}
+              />
             ) : (
               <View style={styles.emptyStateContent}>
-                <Text style={styles.emptyTitle}>Rest Day</Text>
-                <Text style={styles.emptyDescription}>
-                  No workout scheduled for today.
-                </Text>
+                <Text style={styles.emptyTitle}>You’ve completed this week’s plan!</Text>
+                <Button
+                  title="Try a bonus workout"
+                  onPress={() => router.push('/workout/bonus')}
+                  type="secondary"
+                  style={styles.createButton}
+                />
               </View>
             )}
 
             <ProgressStats
-              completed={completedThisWeek}
-              total={totalWorkoutsThisWeek}
+              completed={completedThisWeek.length}
+              total={totalPerWeek}
               totalWorkouts={workoutHistory.length}
             />
             <Button
