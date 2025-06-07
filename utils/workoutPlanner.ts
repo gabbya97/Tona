@@ -261,18 +261,24 @@ export function generateWorkoutPlan(userProfile: UserProfile): WorkoutPlan {
     
     // Get exercises for this workout
     let workoutExercises: Exercise[] = [];
-    
-    if (exerciseCategory in exercises[fitnessLevel][workoutLocation]) {
-      workoutExercises = [...exercises[fitnessLevel][workoutLocation][exerciseCategory]];
-      
-      // Adjust number of exercises based on duration
-      const targetExerciseCount = Math.floor(userProfile.workoutDuration / 10);
-      if (workoutExercises.length > targetExerciseCount) {
-        workoutExercises = workoutExercises.slice(0, targetExerciseCount);
-      }
+
+    if (workoutLocation === 'both') {
+      const gymExercises = exercises[fitnessLevel].gym[exerciseCategory] || [];
+      const homeExercises = exercises[fitnessLevel].home[exerciseCategory] || [];
+      workoutExercises = [...gymExercises, ...homeExercises];
+    } else if (exerciseCategory in exercises[fitnessLevel][workoutLocation]) {
+      workoutExercises = [
+        ...exercises[fitnessLevel][workoutLocation][exerciseCategory],
+      ];
     } else {
       // Fallback to full body if the specific split isn't available
       workoutExercises = [...exercises[fitnessLevel][workoutLocation].full];
+    }
+
+    // Adjust number of exercises based on duration
+    const targetExerciseCount = Math.floor(userProfile.workoutDuration / 10);
+    if (workoutExercises.length > targetExerciseCount) {
+      workoutExercises = workoutExercises.slice(0, targetExerciseCount);
     }
     
     // Create the workout
