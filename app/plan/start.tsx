@@ -6,7 +6,7 @@ import { theme } from '@/constants/theme';
 import Button from '@/components/ui/Button';
 import { useWorkoutStore } from '@/stores/workoutStore';
 // Simple template-based generator
-import { generateSimplePlan } from '@/utils/simplePlanGenerator';
+import { generateWorkoutPlan } from '@/utils/workoutPlanner';
 import GoalSelector from '@/components/plan/GoalSelector';
 import LocationSelector from '@/components/plan/LocationSelector';
 import DaysSelector from '@/components/plan/DaysSelector';
@@ -46,31 +46,12 @@ export default function PlanStartScreen() {
   };
   
   const handlePlanSubmit = () => {
-    const plan = generateSimplePlan({
+    const plan = generateWorkoutPlan({
       goal: planData.goal,
-      location: planData.location,
+      workoutLocation: planData.location as any,
       daysPerWeek: planData.daysPerWeek,
       workoutDuration: planData.sessionDuration,
     });
-    console.log('Generated plan:', plan); // debug log
-
-    // Ensure a valid workout array exists
-    if (!plan.workouts || plan.workouts.length === 0) {
-      // fallback dummy workout if planner fails
-      plan.workouts = [
-        {
-          day: new Date().getDay(),
-          name: 'Full Body Workout',
-          type: 'Full Body',
-          duration: planData.sessionDuration,
-          exercises: [
-            { name: 'Push-ups', sets: 3, reps: 10 },
-            { name: 'Squats', sets: 3, reps: 15 },
-          ],
-        },
-      ];
-    }
-
     setCurrentPlan(plan);
     router.replace('/(tabs)');
   };
