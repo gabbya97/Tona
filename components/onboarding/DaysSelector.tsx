@@ -8,8 +8,8 @@ interface DaysSelectorProps {
 }
 
 const DaysSelector: React.FC<DaysSelectorProps> = ({ selected, onSelect }) => {
-  // Days options from 2 to 6
-  const daysOptions = [2, 3, 4, 5, 6];
+  // Days options from 1 to 6
+  const daysOptions = [1, 2, 3, 4, 5, 6];
   
   return (
     <View style={styles.container}>
@@ -37,7 +37,7 @@ const DaysSelector: React.FC<DaysSelectorProps> = ({ selected, onSelect }) => {
       
       <View style={styles.descriptionContainer}>
         <Text style={styles.descriptionTitle}>
-          {selected} days per week
+          {selected} {selected === 1 ? 'day' : 'days'} per week
         </Text>
         <Text style={styles.descriptionText}>
           {selected <= 3 
