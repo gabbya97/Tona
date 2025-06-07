@@ -51,6 +51,24 @@ export default function PlanStartScreen() {
       daysPerWeek: planData.daysPerWeek,
       workoutDuration: planData.sessionDuration,
     });
+    console.log('Generated plan:', plan); // debug log
+
+    // Ensure a valid workout array exists
+    if (!plan.workouts || plan.workouts.length === 0) {
+      // fallback dummy workout if planner fails
+      plan.workouts = [
+        {
+          day: new Date().getDay(),
+          name: 'Full Body Workout',
+          type: 'Full Body',
+          duration: planData.sessionDuration,
+          exercises: [
+            { name: 'Push-ups', sets: 3, reps: 10 },
+            { name: 'Squats', sets: 3, reps: 15 },
+          ],
+        },
+      ];
+    }
 
     setCurrentPlan(plan);
     router.replace('/(tabs)');
