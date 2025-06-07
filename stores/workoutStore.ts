@@ -53,7 +53,16 @@ interface WorkoutState {
 export const useWorkoutStore = create<WorkoutState>((set) => ({
   currentPlan: null,
   workoutHistory: [],
-  setCurrentPlan: (plan) => set({ currentPlan: plan }),
+  setCurrentPlan: (plan) =>
+    set({
+      currentPlan: {
+        ...plan,
+        workouts: plan.workouts?.map((w) => ({
+          ...w,
+          day: Number(w.day)
+        })) || []
+      }
+    }),
   addWorkoutHistory: (workout) => 
     set((state) => ({
       workoutHistory: [workout, ...state.workoutHistory]

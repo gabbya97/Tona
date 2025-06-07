@@ -18,9 +18,20 @@ export default function HomeScreen() {
 
   const today = new Date();
   const todayDay = today.getDay();
-  const todayWorkout = currentPlan?.workouts?.find(
-    workout => Number(workout.day) === todayDay
+
+  console.log('Today getDay():', todayDay);
+  currentPlan?.workouts?.forEach(w =>
+    console.log('Workout day:', w.day, 'type:', typeof w.day)
   );
+
+  const todayWorkout = currentPlan?.workouts?.find(workout => {
+    const match = Number(workout.day) === todayDay;
+    console.log(
+      `Comparing today (${todayDay}) with workout day (${workout.day}) ->`,
+      match
+    );
+    return match;
+  });
 
   const startWorkout = () => {
     router.push('/workout/session');
