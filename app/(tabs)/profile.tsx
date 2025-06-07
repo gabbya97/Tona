@@ -143,7 +143,12 @@ export default function ProfileScreen() {
             </View>
             <View style={styles.preferenceContent}>
               <Text style={styles.preferenceTitle}>Workout Location</Text>
-              <Text style={styles.preferenceValue}>{userProfile?.workoutLocation || 'Gym'}</Text>
+              <Text style={styles.preferenceValue}>
+                {userProfile?.workoutLocation
+                  ? userProfile.workoutLocation.charAt(0).toUpperCase() +
+                    userProfile.workoutLocation.slice(1)
+                  : 'Gym'}
+              </Text>
             </View>
             <ChevronRight size={20} color={theme.colors.textLight} />
           </View>

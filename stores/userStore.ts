@@ -4,7 +4,7 @@ export interface UserProfile {
   name?: string;
   avatar?: string;
   fitnessLevel?: 'beginner' | 'intermediate' | 'advanced';
-  workoutLocation?: 'home' | 'gym';
+  workoutLocation?: 'home' | 'gym' | 'both';
   equipment?: string[];
   daysPerWeek?: number;
   workoutDuration?: number;

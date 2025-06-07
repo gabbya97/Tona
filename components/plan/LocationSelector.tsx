@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { theme } from '@/constants/theme';
-import { Chrome as Home, Building2 } from 'lucide-react-native';
+import { Chrome as Home, Building2, Shuffle } from 'lucide-react-native';
 
 interface LocationSelectorProps {
   selected: string;
@@ -75,6 +75,37 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
           Full range of equipment available
         </Text>
       </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[
+          styles.locationCard,
+          selected === 'both' && styles.selectedCard
+        ]}
+        onPress={() => onSelect('both')}
+      >
+        <View
+          style={[
+            styles.iconContainer,
+            selected === 'both' && styles.selectedIconContainer
+          ]}
+        >
+          <Shuffle
+            size={36}
+            color={selected === 'both' ? theme.colors.primary : theme.colors.textLight}
+          />
+        </View>
+        <Text
+          style={[
+            styles.locationTitle,
+            selected === 'both' && styles.selectedText
+          ]}
+        >
+          Both
+        </Text>
+        <Text style={styles.locationDescription}>
+          Mix of home and gym workouts
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -83,6 +114,7 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
   locationCard: {
