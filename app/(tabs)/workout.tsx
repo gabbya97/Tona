@@ -25,11 +25,16 @@ export default function WorkoutScreen() {
   }) || [];
 
   const skippedCount = skippedWorkouts?.filter(w => w.weekStart === startOfWeek.toISOString()).length || 0;
-  const currentIndex = completedThisWeek.length + skippedCount;
 
   const totalPerWeek = currentPlan?.workouts?.length || 0;
-  const hasWorkoutRemaining = currentIndex < totalPerWeek;
-  const todayWorkout = currentPlan?.workouts?.[currentIndex];
+  const allDone = completedThisWeek.length + skippedCount >= totalPerWeek;
+
+  const todayDay = today.getDay();
+  const todayIndex = currentPlan?.workouts?.findIndex(w => Number(w.day) === todayDay) ?? -1;
+
+  const hasWorkoutToday = todayIndex >= 0 && todayIndex < totalPerWeek;
+  const hasWorkoutRemaining = hasWorkoutToday && !allDone;
+  const todayWorkout = hasWorkoutToday ? currentPlan?.workouts?.[todayIndex] : null;
   
   // Get last completed workout
   const lastWorkout = workoutHistory && workoutHistory.length > 0 
@@ -135,14 +140,11 @@ export default function WorkoutScreen() {
               <View style={styles.restDayIconContainer}>
                 <Dumbbell size={36} color={theme.colors.primaryLight} />
               </View>
-              {hasWorkoutRemaining ? (
+              {allDone ? (
                 <>
-                  <Text style={styles.restDayTitle}>Rest Day</Text>
-                  <Text style={styles.restDayText}>
-                    No workout scheduled for today. Rest and recovery are essential for your progress!
-                  </Text>
+                  <Text style={styles.restDayTitle}>You’re done!</Text>
                   <Button
-                    title="See Bonus Workouts"
+                    title="Try a bonus workout"
                     onPress={() => router.push('/workout/bonus')}
                     style={styles.bonusButton}
                     type="secondary"
@@ -150,9 +152,12 @@ export default function WorkoutScreen() {
                 </>
               ) : (
                 <>
-                  <Text style={styles.restDayTitle}>You’re done!</Text>
+                  <Text style={styles.restDayTitle}>Rest Day</Text>
+                  <Text style={styles.restDayText}>
+                    No workout scheduled for today. Rest and recovery are essential for your progress!
+                  </Text>
                   <Button
-                    title="Try a bonus workout"
+                    title="See Bonus Workouts"
                     onPress={() => router.push('/workout/bonus')}
                     style={styles.bonusButton}
                     type="secondary"

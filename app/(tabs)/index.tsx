@@ -30,12 +30,17 @@ export default function HomeScreen() {
   }) || [];
 
   const skippedCount = skippedWorkouts?.filter(w => w.weekStart === startOfWeek.toISOString()).length || 0;
-  const currentIndex = completedThisWeek.length + skippedCount;
 
   const totalPerWeek = currentPlan?.workouts?.length || 0;
 
-  const hasWorkoutRemaining = currentIndex < totalPerWeek;
-  const todayWorkout = currentPlan?.workouts?.[currentIndex];
+  const allDone = completedThisWeek.length + skippedCount >= totalPerWeek;
+
+  const todayDay = today.getDay();
+  const todayIndex = currentPlan?.workouts?.findIndex(w => Number(w.day) === todayDay) ?? -1;
+
+  const hasWorkoutToday = todayIndex >= 0 && todayIndex < totalPerWeek;
+  const hasWorkoutRemaining = hasWorkoutToday && !allDone;
+  const todayWorkout = hasWorkoutToday ? currentPlan?.workouts?.[todayIndex] : null;
 
   const startWorkout = () => {
     router.push('/workout/session');
@@ -77,17 +82,23 @@ export default function HomeScreen() {
               <DailyWorkoutCard
                 workout={todayWorkout}
                 onPress={startWorkout}
-                onSkip={() => addSkippedWorkout(currentIndex, startOfWeek.toISOString())}
+                onSkip={() => addSkippedWorkout(todayIndex, startOfWeek.toISOString())}
               />
             ) : (
               <View style={styles.emptyStateContent}>
-                <Text style={styles.emptyTitle}>You’ve completed this week’s plan!</Text>
-                <Button
-                  title="Try a bonus workout"
-                  onPress={() => router.push('/workout/bonus')}
-                  type="secondary"
-                  style={styles.createButton}
-                />
+                {allDone ? (
+                  <>
+                    <Text style={styles.emptyTitle}>You’ve completed this week’s plan!</Text>
+                    <Button
+                      title="Try a bonus workout"
+                      onPress={() => router.push('/workout/bonus')}
+                      type="secondary"
+                      style={styles.createButton}
+                    />
+                  </>
+                ) : (
+                  <Text style={styles.emptyTitle}>Rest day – no workout scheduled.</Text>
+                )}
               </View>
             )}
 
