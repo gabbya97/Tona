@@ -10,7 +10,6 @@ import GoalSelector from '@/components/plan/GoalSelector';
 import LocationSelector from '@/components/plan/LocationSelector';
 import DaysSelector from '@/components/plan/DaysSelector';
 import DurationSelector from '@/components/plan/DurationSelector';
-import ExtrasSelector from '@/components/plan/ExtrasSelector';
 import { ArrowLeft } from 'lucide-react-native';
 
 export default function PlanStartScreen() {
@@ -23,7 +22,6 @@ export default function PlanStartScreen() {
     location: '',
     daysPerWeek: 3,
     sessionDuration: 45,
-    extras: [],
   });
   
   const updatePlanData = (key: string, value: any) => {
@@ -31,7 +29,7 @@ export default function PlanStartScreen() {
   };
   
   const handleNext = () => {
-    if (step < 4) {
+    if (step < 3) {
       setStep(step + 1);
     } else {
       completePlanSetup();
@@ -52,7 +50,6 @@ export default function PlanStartScreen() {
       workoutLocation: planData.location,
       daysPerWeek: planData.daysPerWeek,
       workoutDuration: planData.sessionDuration,
-      extras: planData.extras,
     });
     
     setCurrentPlan(plan);
@@ -139,23 +136,11 @@ export default function PlanStartScreen() {
           </View>
         )}
         
-        {step === 4 && (
-          <View style={styles.step}>
-            <Text style={styles.stepTitle}>Any extras?</Text>
-            <Text style={styles.stepDescription}>
-              Optional add-ons to enhance your training.
-            </Text>
-            <ExtrasSelector
-              selected={planData.extras}
-              onSelect={(extras) => updatePlanData('extras', extras)}
-            />
-          </View>
-        )}
       </ScrollView>
       
       <View style={styles.footer}>
         <Button
-          title={step === 4 ? "Create My Plan" : "Continue"}
+          title={step === 3 ? "Create My Plan" : "Continue"}
           onPress={handleNext}
           disabled={isNextDisabled()}
           style={styles.nextButton}
