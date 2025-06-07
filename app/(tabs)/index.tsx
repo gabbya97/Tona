@@ -8,13 +8,13 @@ import { theme } from '@/constants/theme';
 import Button from '@/components/ui/Button';
 import { getGreeting, getWeekStart } from '@/utils/helpers';
 import { Dumbbell } from 'lucide-react-native';
-import DailyWorkoutCard from '@/components/home/DailyWorkoutCard';
 import ProgressStats from '@/components/home/ProgressStats';
+import WeeklyWorkoutCard from '@/components/home/WeeklyWorkoutCard';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { userData } = useAuthStore();
-  const { currentPlan, workoutHistory, skippedWorkouts, addSkippedWorkout } = useWorkoutStore();
+  const { currentPlan, workoutHistory, skippedWorkouts } = useWorkoutStore();
 
   const startOfWeek = getWeekStart();
 
@@ -24,19 +24,32 @@ export default function HomeScreen() {
     return date >= startOfWeek;
   }) || [];
 
-  const skippedCount = skippedWorkouts?.filter(w => w.weekStart === startOfWeek.toISOString()).length || 0;
+  const skippedThisWeek = skippedWorkouts?.filter(
+    w => w.weekStart === startOfWeek.toISOString()
+  ) || [];
+  const skippedIndices = skippedThisWeek.map(w => w.index);
 
   const totalPerWeek = currentPlan?.workouts?.length || 0;
 
-  const allDone = completedThisWeek.length + skippedCount >= totalPerWeek;
+  const nextIndex = completedThisWeek.length + skippedIndices.length;
+  const allDone = nextIndex >= totalPerWeek;
 
-  const nextIndex = completedThisWeek.length + skippedCount;
-  const hasWorkoutRemaining = nextIndex < totalPerWeek;
-  const todayWorkout = hasWorkoutRemaining ? currentPlan?.workouts?.[nextIndex] : null;
+  const completedIndices: number[] = [];
+  for (let i = 0; i < nextIndex; i++) {
+    if (!skippedIndices.includes(i)) {
+      completedIndices.push(i);
+    }
+  }
 
-  const startWorkout = () => {
-    router.push('/workout/session');
-  };
+  const workoutsWithStatus =
+    currentPlan?.workouts?.map((w, idx) => {
+      let status: 'Pending' | 'Completed' | 'Skipped';
+      if (skippedIndices.includes(idx)) status = 'Skipped';
+      else if (completedIndices.includes(idx)) status = 'Completed';
+      else status = 'Pending';
+      return { workout: w, status };
+    }) || [];
+
   
   return (
     <SafeAreaView style={styles.container}>
@@ -70,35 +83,42 @@ export default function HomeScreen() {
               {getGreeting()}, {userData?.fullName?.split(' ')[0]} 👋
             </Text>
 
-            {hasWorkoutRemaining ? (
-              <DailyWorkoutCard
-                workout={todayWorkout}
-                onPress={startWorkout}
-                onSkip={() => addSkippedWorkout(nextIndex, startOfWeek.toISOString())}
-              />
-            ) : (
-              <View style={styles.emptyStateContent}>
-                {allDone ? (
-                  <>
-                    <Text style={styles.emptyTitle}>
-                      You’ve completed your plan for the week! Want to repeat one or add a bonus workout?
-                    </Text>
-                    <Button
-                      title="Try a bonus workout"
-                      onPress={() => router.push('/workout/bonus')}
-                      type="secondary"
-                      style={styles.createButton}
-                    />
-                  </>
-                ) : null}
-              </View>
-            )}
-
             <ProgressStats
               completed={completedThisWeek.length}
               total={totalPerWeek}
               totalWorkouts={workoutHistory.length}
             />
+
+            {allDone ? (
+              <View style={styles.allDoneContainer}>
+                <Text style={styles.emptyTitle}>You’ve smashed your plan for the week!</Text>
+                <Button
+                  title="Repeat a workout"
+                  onPress={() => router.push('/workout/bonus')}
+                  type="secondary"
+                  style={styles.createButton}
+                />
+              </View>
+            ) : null}
+
+            <View style={styles.weekList}>
+              {workoutsWithStatus.map((item, index) => (
+                <WeeklyWorkoutCard
+                  key={index}
+                  index={index}
+                  workout={item.workout}
+                  status={item.status as any}
+                  isNext={index === nextIndex}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/workout/session',
+                      params: { id: index.toString() }
+                    })
+                  }
+                />
+              ))}
+            </View>
+
             <Button
               title="Change My Plan"
               type="outline"
@@ -166,6 +186,17 @@ const styles = StyleSheet.create({
   changePlanButton: {
     marginTop: 20,
     width: '100%',
+  },
+  weekList: {
+    marginTop: 20,
+  },
+  allDoneContainer: {
+    backgroundColor: theme.colors.white,
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    marginTop: 20,
+    ...theme.shadows.small,
   },
   planContainer: {
     padding: 20,
