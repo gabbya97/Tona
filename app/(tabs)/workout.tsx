@@ -16,8 +16,9 @@ export default function WorkoutScreen() {
   
   // Get today's workout if any
   const today = new Date();
+  const todayDay = today.getDay();
   const todayWorkout = currentPlan?.workouts?.find(
-    workout => workout.day === today.getDay()
+    workout => Number(workout.day) === todayDay
   );
   
   // Get last completed workout
