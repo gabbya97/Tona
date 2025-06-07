@@ -219,7 +219,13 @@ const exercises = {
 
 // Generate a workout plan based on user profile
 export function generateWorkoutPlan(userProfile: UserProfile): WorkoutPlan {
-  const { fitnessLevel = 'beginner', workoutLocation = 'gym', daysPerWeek = 3, goal = 'strength' } = userProfile;
+  const {
+    fitnessLevel = 'beginner',
+    workoutLocation = 'gym',
+    daysPerWeek = 3,
+    goal = 'strength',
+    workoutDuration = 45
+  } = userProfile;
   
   // Determine the split type based on days per week
   let splitType: string;
@@ -242,6 +248,12 @@ export function generateWorkoutPlan(userProfile: UserProfile): WorkoutPlan {
   
   // Determine workout schedule (which days of the week)
   const workoutDays = generateWorkoutSchedule(daysPerWeek);
+
+  const targetExerciseCount = (() => {
+    if (workoutDuration <= 30) return 5;
+    if (workoutDuration >= 60) return 8;
+    return 6; // default for ~45 mins
+  })();
   
   // Generate workouts for each day
   const workouts: Workout[] = workoutDays.map((day, index) => {
@@ -275,10 +287,39 @@ export function generateWorkoutPlan(userProfile: UserProfile): WorkoutPlan {
       workoutExercises = [...exercises[fitnessLevel][workoutLocation].full];
     }
 
+    // Filter based on goal
+    if (goal.toLowerCase().includes('glute')) {
+      const keywords = ['glute', 'hip', 'lunge', 'squat', 'deadlift'];
+      const focused = workoutExercises.filter((ex) =>
+        keywords.some((k) => ex.name.toLowerCase().includes(k))
+      );
+      if (focused.length >= 3) {
+        workoutExercises = focused;
+      }
+    }
+
+    // Home workouts should avoid heavy equipment
+    if (workoutLocation === 'home') {
+      workoutExercises = workoutExercises.filter((ex) => {
+        if (!ex.equipment || ex.equipment.length === 0) return true;
+        return ex.equipment.every((eq) =>
+          ['Dumbbells', 'Kettlebells', 'Resistance Bands'].includes(eq)
+        );
+      });
+    }
+
     // Adjust number of exercises based on duration
-    const targetExerciseCount = Math.floor(userProfile.workoutDuration / 10);
     if (workoutExercises.length > targetExerciseCount) {
       workoutExercises = workoutExercises.slice(0, targetExerciseCount);
+    } else if (workoutExercises.length < targetExerciseCount) {
+      // Repeat exercises if not enough to reach desired count
+      const extra = [] as Exercise[];
+      let i = 0;
+      while (extra.length + workoutExercises.length < targetExerciseCount) {
+        extra.push(workoutExercises[i % workoutExercises.length]);
+        i++;
+      }
+      workoutExercises = [...workoutExercises, ...extra];
     }
     
     // Create the workout
