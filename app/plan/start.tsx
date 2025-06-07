@@ -33,8 +33,6 @@ export default function PlanStartScreen() {
   const handleNext = () => {
     if (step < 4) {
       setStep(step + 1);
-    } else {
-      completePlanSetup();
     }
   };
   
@@ -46,14 +44,14 @@ export default function PlanStartScreen() {
     }
   };
   
-  const completePlanSetup = () => {
+  const handlePlanSubmit = () => {
     const plan = generateWorkoutPlan({
       goal: planData.goal,
       workoutLocation: planData.location,
       daysPerWeek: planData.daysPerWeek,
       workoutDuration: planData.sessionDuration,
     });
-    
+
     setCurrentPlan(plan);
     router.replace('/(tabs)');
   };
@@ -156,12 +154,21 @@ export default function PlanStartScreen() {
       </ScrollView>
       
       <View style={styles.footer}>
-        <Button
-          title={step === 4 ? "Create My Plan" : "Continue"}
-          onPress={handleNext}
-          disabled={isNextDisabled()}
-          style={styles.nextButton}
-        />
+        {step === 4 ? (
+          <Button
+            title="Create My Plan"
+            onPress={handlePlanSubmit}
+            disabled={isNextDisabled()}
+            style={styles.nextButton}
+          />
+        ) : (
+          <Button
+            title="Continue"
+            onPress={handleNext}
+            disabled={isNextDisabled()}
+            style={styles.nextButton}
+          />
+        )}
       </View>
     </SafeAreaView>
   );
