@@ -11,15 +11,25 @@ import { formatDate } from '@/utils/helpers';
 
 export default function WorkoutScreen() {
   const router = useRouter();
-  const { currentPlan, workoutHistory } = useWorkoutStore();
+  const { currentPlan, workoutHistory, skippedWorkouts, addSkippedWorkout } = useWorkoutStore();
   const [activeTab, setActiveTab] = useState('today');
   
-  // Get today's workout if any
-  const today = new Date();
-  const todayDay = today.getDay();
-  const todayWorkout = currentPlan?.workouts?.find(
-    workout => Number(workout.day) === todayDay
-  );
+  // Determine start of week (Monday)
+  const startOfWeek = new Date();
+  startOfWeek.setHours(0, 0, 0, 0);
+  startOfWeek.setDate(startOfWeek.getDate() - ((startOfWeek.getDay() + 6) % 7));
+
+  const completedThisWeek = workoutHistory?.filter(w => {
+    const date = new Date(w.date);
+    return date >= startOfWeek;
+  }) || [];
+
+  const skippedCount = skippedWorkouts?.filter(w => w.weekStart === startOfWeek.toISOString()).length || 0;
+  const currentIndex = completedThisWeek.length + skippedCount;
+
+  const totalPerWeek = currentPlan?.workouts?.length || 0;
+  const hasWorkoutRemaining = currentIndex < totalPerWeek;
+  const todayWorkout = currentPlan?.workouts?.[currentIndex];
   
   // Get last completed workout
   const lastWorkout = workoutHistory && workoutHistory.length > 0 
@@ -69,7 +79,7 @@ export default function WorkoutScreen() {
       
       {activeTab === 'today' ? (
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {todayWorkout ? (
+          {hasWorkoutRemaining && todayWorkout ? (
             <View style={styles.todayWorkoutContainer}>
               <View style={styles.workoutCardHeader}>
                 <View style={styles.workoutIconContainer}>
@@ -125,16 +135,30 @@ export default function WorkoutScreen() {
               <View style={styles.restDayIconContainer}>
                 <Dumbbell size={36} color={theme.colors.primaryLight} />
               </View>
-              <Text style={styles.restDayTitle}>Rest Day</Text>
-              <Text style={styles.restDayText}>
-                No workout scheduled for today. Rest and recovery are essential for your progress!
-              </Text>
-              <Button 
-                title="See Bonus Workouts" 
-                onPress={() => router.push('/workout/bonus')}
-                style={styles.bonusButton}
-                type="secondary"
-              />
+              {hasWorkoutRemaining ? (
+                <>
+                  <Text style={styles.restDayTitle}>Rest Day</Text>
+                  <Text style={styles.restDayText}>
+                    No workout scheduled for today. Rest and recovery are essential for your progress!
+                  </Text>
+                  <Button
+                    title="See Bonus Workouts"
+                    onPress={() => router.push('/workout/bonus')}
+                    style={styles.bonusButton}
+                    type="secondary"
+                  />
+                </>
+              ) : (
+                <>
+                  <Text style={styles.restDayTitle}>You’re done!</Text>
+                  <Button
+                    title="Try a bonus workout"
+                    onPress={() => router.push('/workout/bonus')}
+                    style={styles.bonusButton}
+                    type="secondary"
+                  />
+                </>
+              )}
             </View>
           )}
         </ScrollView>

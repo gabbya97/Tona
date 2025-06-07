@@ -7,9 +7,10 @@ import { Workout } from '@/stores/workoutStore';
 interface DailyWorkoutCardProps {
   workout: Workout;
   onPress: () => void;
+  onSkip?: () => void;
 }
 
-const DailyWorkoutCard: React.FC<DailyWorkoutCardProps> = ({ workout, onPress }) => {
+const DailyWorkoutCard: React.FC<DailyWorkoutCardProps> = ({ workout, onPress, onSkip }) => {
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
       <View style={styles.header}>
@@ -45,8 +46,16 @@ const DailyWorkoutCard: React.FC<DailyWorkoutCardProps> = ({ workout, onPress })
       </View>
       
       <View style={styles.footer}>
-        <Text style={styles.startText}>Start Workout</Text>
-        <ChevronRight size={20} color={theme.colors.primary} />
+        {onSkip && (
+          <TouchableOpacity onPress={onSkip} style={styles.skipButton}>
+            <Text style={styles.skipText}>Skip</Text>
+          </TouchableOpacity>
+        )}
+
+        <View style={styles.startContainer}>
+          <Text style={styles.startText}>Start Workout</Text>
+          <ChevronRight size={20} color={theme.colors.primary} />
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -127,10 +136,23 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: theme.colors.borderLight,
+  },
+  skipButton: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  skipText: {
+    fontFamily: 'Outfit-Regular',
+    fontSize: 14,
+    color: theme.colors.textLight,
+  },
+  startContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   startText: {
     fontFamily: 'Outfit-SemiBold',

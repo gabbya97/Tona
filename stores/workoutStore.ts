@@ -44,16 +44,24 @@ export interface WorkoutHistory {
   exercises: CompletedExercise[];
 }
 
+export interface SkippedWorkout {
+  weekStart: string;
+  index: number;
+}
+
 interface WorkoutState {
   currentPlan: WorkoutPlan | null;
   workoutHistory: WorkoutHistory[];
+  skippedWorkouts: SkippedWorkout[];
   setCurrentPlan: (plan: WorkoutPlan) => void;
   addWorkoutHistory: (workout: WorkoutHistory) => void;
+  addSkippedWorkout: (index: number, weekStart: string) => void;
 }
 
 export const useWorkoutStore = create<WorkoutState>((set) => ({
   currentPlan: null,
   workoutHistory: [],
+  skippedWorkouts: [],
   setCurrentPlan: (plan) => {
     saveCurrentPlan(plan);
     set({
@@ -66,8 +74,15 @@ export const useWorkoutStore = create<WorkoutState>((set) => ({
       }
     });
   },
-  addWorkoutHistory: (workout) => 
+  addWorkoutHistory: (workout) =>
     set((state) => ({
       workoutHistory: [workout, ...state.workoutHistory]
+    })),
+  addSkippedWorkout: (index, weekStart) =>
+    set((state) => ({
+      skippedWorkouts: [
+        { index, weekStart },
+        ...state.skippedWorkouts
+      ]
     })),
 }));
