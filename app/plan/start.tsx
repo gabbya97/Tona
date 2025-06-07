@@ -5,7 +5,8 @@ import { useRouter } from 'expo-router';
 import { theme } from '@/constants/theme';
 import Button from '@/components/ui/Button';
 import { useWorkoutStore } from '@/stores/workoutStore';
-import { generateWorkoutPlan } from '@/utils/workoutPlanner';
+// Simple template-based generator
+import { generateSimplePlan } from '@/utils/simplePlanGenerator';
 import GoalSelector from '@/components/plan/GoalSelector';
 import LocationSelector from '@/components/plan/LocationSelector';
 import DaysSelector from '@/components/plan/DaysSelector';
@@ -45,9 +46,9 @@ export default function PlanStartScreen() {
   };
   
   const handlePlanSubmit = () => {
-    const plan = generateWorkoutPlan({
+    const plan = generateSimplePlan({
       goal: planData.goal,
-      workoutLocation: planData.location,
+      location: planData.location,
       daysPerWeek: planData.daysPerWeek,
       workoutDuration: planData.sessionDuration,
     });
