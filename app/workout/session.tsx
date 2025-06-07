@@ -8,18 +8,31 @@ import { useWorkoutStore } from '@/stores/workoutStore';
 import { useProgressStore } from '@/stores/progressStore';
 import Button from '@/components/ui/Button';
 import Timer from '@/components/workout/Timer';
+import { getWeekStart } from '@/utils/helpers';
 
 export default function WorkoutSessionScreen() {
   const router = useRouter();
   const { currentPlan, addWorkoutHistory } = useWorkoutStore();
   const { addPersonalRecord } = useProgressStore();
   
-  // Get today's workout
-  const today = new Date();
-  const todayDay = today.getDay();
-  const todayWorkout = currentPlan?.workouts?.find(
-    workout => Number(workout.day) === todayDay
-  );
+  const startOfWeek = getWeekStart();
+
+  const completedThisWeek =
+    useWorkoutStore.getState().workoutHistory?.filter(w => {
+      const date = new Date(w.date);
+      return date >= startOfWeek;
+    }) || [];
+
+  const skippedCount =
+    useWorkoutStore.getState().skippedWorkouts?.filter(
+      w => w.weekStart === startOfWeek.toISOString()
+    ).length || 0;
+
+  const nextIndex = completedThisWeek.length + skippedCount;
+  const todayWorkout =
+    currentPlan?.workouts && nextIndex < currentPlan.workouts.length
+      ? currentPlan.workouts[nextIndex]
+      : null;
   
   const [workoutStarted, setWorkoutStarted] = useState(false);
   const [workoutCompleted, setWorkoutCompleted] = useState(false);
@@ -166,9 +179,9 @@ export default function WorkoutSessionScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.noWorkoutContainer}>
-          <Text style={styles.noWorkoutText}>No workout scheduled for today.</Text>
-          <Button 
-            title="Go Back" 
+          <Text style={styles.noWorkoutText}>No workouts left for this week.</Text>
+          <Button
+            title="Go Back"
             onPress={() => router.back()}
             style={styles.goBackButton}
           />

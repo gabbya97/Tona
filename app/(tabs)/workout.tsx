@@ -7,17 +7,14 @@ import { theme } from '@/constants/theme';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import Button from '@/components/ui/Button';
 import WorkoutHistoryCard from '@/components/workout/WorkoutHistoryCard';
-import { formatDate } from '@/utils/helpers';
+import { formatDate, getWeekStart } from '@/utils/helpers';
 
 export default function WorkoutScreen() {
   const router = useRouter();
   const { currentPlan, workoutHistory, skippedWorkouts, addSkippedWorkout } = useWorkoutStore();
   const [activeTab, setActiveTab] = useState('today');
   
-  // Determine start of week (Monday)
-  const startOfWeek = new Date();
-  startOfWeek.setHours(0, 0, 0, 0);
-  startOfWeek.setDate(startOfWeek.getDate() - ((startOfWeek.getDay() + 6) % 7));
+  const startOfWeek = getWeekStart();
 
   const completedThisWeek = workoutHistory?.filter(w => {
     const date = new Date(w.date);
@@ -27,14 +24,11 @@ export default function WorkoutScreen() {
   const skippedCount = skippedWorkouts?.filter(w => w.weekStart === startOfWeek.toISOString()).length || 0;
 
   const totalPerWeek = currentPlan?.workouts?.length || 0;
-  const allDone = completedThisWeek.length + skippedCount >= totalPerWeek;
+  const nextIndex = completedThisWeek.length + skippedCount;
+  const allDone = nextIndex >= totalPerWeek;
 
-  const todayDay = today.getDay();
-  const todayIndex = currentPlan?.workouts?.findIndex(w => Number(w.day) === todayDay) ?? -1;
-
-  const hasWorkoutToday = todayIndex >= 0 && todayIndex < totalPerWeek;
-  const hasWorkoutRemaining = hasWorkoutToday && !allDone;
-  const todayWorkout = hasWorkoutToday ? currentPlan?.workouts?.[todayIndex] : null;
+  const hasWorkoutRemaining = nextIndex < totalPerWeek;
+  const todayWorkout = hasWorkoutRemaining ? currentPlan?.workouts?.[nextIndex] : null;
   
   // Get last completed workout
   const lastWorkout = workoutHistory && workoutHistory.length > 0 
@@ -142,7 +136,9 @@ export default function WorkoutScreen() {
               </View>
               {allDone ? (
                 <>
-                  <Text style={styles.restDayTitle}>You’re done!</Text>
+                  <Text style={styles.restDayTitle}>
+                    You’ve completed your plan for the week! Want to repeat one or add a bonus workout?
+                  </Text>
                   <Button
                     title="Try a bonus workout"
                     onPress={() => router.push('/workout/bonus')}
@@ -150,20 +146,7 @@ export default function WorkoutScreen() {
                     type="secondary"
                   />
                 </>
-              ) : (
-                <>
-                  <Text style={styles.restDayTitle}>Rest Day</Text>
-                  <Text style={styles.restDayText}>
-                    No workout scheduled for today. Rest and recovery are essential for your progress!
-                  </Text>
-                  <Button
-                    title="See Bonus Workouts"
-                    onPress={() => router.push('/workout/bonus')}
-                    style={styles.bonusButton}
-                    type="secondary"
-                  />
-                </>
-              )}
+              ) : null}
             </View>
           )}
         </ScrollView>
@@ -368,13 +351,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: theme.colors.text,
     marginBottom: 8,
-  },
-  restDayText: {
-    fontFamily: 'Outfit-Regular',
-    fontSize: 14,
-    color: theme.colors.textLight,
-    textAlign: 'center',
-    marginBottom: 20,
   },
   bonusButton: {
     width: '100%',
