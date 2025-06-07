@@ -16,8 +16,9 @@ export default function WorkoutSessionScreen() {
   
   // Get today's workout
   const today = new Date();
+  const todayDay = today.getDay();
   const todayWorkout = currentPlan?.workouts?.find(
-    workout => workout.day === today.getDay()
+    workout => Number(workout.day) === todayDay
   );
   
   const [workoutStarted, setWorkoutStarted] = useState(false);

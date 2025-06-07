@@ -30,7 +30,9 @@ export default function PlanScreen() {
       for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(year, month, day);
         // Check if there's a workout scheduled for this day of week
-        const hasWorkout = currentPlan.workouts.some(workout => workout.day === date.getDay());
+        const hasWorkout = currentPlan.workouts.some(
+          workout => Number(workout.day) === date.getDay()
+        );
         
         if (hasWorkout) {
           // Format date as YYYY-MM-DD
@@ -59,7 +61,7 @@ export default function PlanScreen() {
     
     // Find workout for the selected day of the week
     return currentPlan.workouts.find(
-      workout => workout.day === selectedDate.getDay()
+      workout => Number(workout.day) === selectedDate.getDay()
     );
   };
   

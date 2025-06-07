@@ -17,8 +17,9 @@ export default function HomeScreen() {
   const { currentPlan, workoutHistory } = useWorkoutStore();
 
   const today = new Date();
+  const todayDay = today.getDay();
   const todayWorkout = currentPlan?.workouts?.find(
-    workout => workout.day === today.getDay()
+    workout => Number(workout.day) === todayDay
   );
 
   const startWorkout = () => {
