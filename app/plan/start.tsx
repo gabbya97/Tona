@@ -10,6 +10,7 @@ import GoalSelector from '@/components/plan/GoalSelector';
 import LocationSelector from '@/components/plan/LocationSelector';
 import DaysSelector from '@/components/plan/DaysSelector';
 import DurationSelector from '@/components/plan/DurationSelector';
+import FocusAreasSelector from '@/components/plan/FocusAreasSelector';
 import { ArrowLeft } from 'lucide-react-native';
 
 export default function PlanStartScreen() {
@@ -20,6 +21,7 @@ export default function PlanStartScreen() {
   const [planData, setPlanData] = useState({
     goal: '',
     location: '',
+    trainingFocus: [] as string[],
     daysPerWeek: 3,
     sessionDuration: 45,
   });
@@ -29,7 +31,7 @@ export default function PlanStartScreen() {
   };
   
   const handleNext = () => {
-    if (step < 3) {
+    if (step < 4) {
       setStep(step + 1);
     } else {
       completePlanSetup();
@@ -63,8 +65,10 @@ export default function PlanStartScreen() {
       case 1:
         return !planData.location;
       case 2:
-        return !planData.daysPerWeek;
+        return planData.trainingFocus.length === 0;
       case 3:
+        return !planData.daysPerWeek;
+      case 4:
         return !planData.sessionDuration;
       default:
         return false;
@@ -112,6 +116,19 @@ export default function PlanStartScreen() {
         
         {step === 2 && (
           <View style={styles.step}>
+            <Text style={styles.stepTitle}>What areas would you like to focus on?</Text>
+            <Text style={styles.stepDescription}>
+              Choose as many as you like — this helps us tailor your training.
+            </Text>
+            <FocusAreasSelector
+              selected={planData.trainingFocus}
+              onSelect={(areas) => updatePlanData('trainingFocus', areas)}
+            />
+          </View>
+        )}
+
+        {step === 3 && (
+          <View style={styles.step}>
             <Text style={styles.stepTitle}>How many days can you train?</Text>
             <Text style={styles.stepDescription}>
               Choose a schedule that fits your lifestyle.
@@ -122,8 +139,8 @@ export default function PlanStartScreen() {
             />
           </View>
         )}
-        
-        {step === 3 && (
+
+        {step === 4 && (
           <View style={styles.step}>
             <Text style={styles.stepTitle}>How long is each session?</Text>
             <Text style={styles.stepDescription}>
@@ -140,7 +157,7 @@ export default function PlanStartScreen() {
       
       <View style={styles.footer}>
         <Button
-          title={step === 3 ? "Create My Plan" : "Continue"}
+          title={step === 4 ? "Create My Plan" : "Continue"}
           onPress={handleNext}
           disabled={isNextDisabled()}
           style={styles.nextButton}
