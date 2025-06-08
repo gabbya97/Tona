@@ -5,8 +5,8 @@ import { useRouter } from 'expo-router';
 import { theme } from '@/constants/theme';
 import Button from '@/components/ui/Button';
 import { useWorkoutStore } from '@/stores/workoutStore';
-// Simple template-based generator
-import { generateWorkoutPlan } from '@/utils/workoutPlanner';
+// AI-based workout plan generator
+import { generateAIWorkoutPlan } from '@/utils/generateAIWorkoutPlan';
 import GoalSelector from '@/components/plan/GoalSelector';
 import LocationSelector from '@/components/plan/LocationSelector';
 import DaysSelector from '@/components/plan/DaysSelector';
@@ -45,15 +45,19 @@ export default function PlanStartScreen() {
     }
   };
   
-  const handlePlanSubmit = () => {
-    const plan = generateWorkoutPlan({
-      goal: planData.goal,
-      workoutLocation: planData.location as any,
-      daysPerWeek: planData.daysPerWeek,
-      workoutDuration: planData.sessionDuration,
-    });
-    setCurrentPlan(plan);
-    router.replace('/(tabs)');
+  const handlePlanSubmit = async () => {
+    try {
+      const plan = await generateAIWorkoutPlan({
+        goal: planData.goal,
+        workoutLocation: planData.location as any,
+        daysPerWeek: planData.daysPerWeek,
+        workoutDuration: planData.sessionDuration,
+      });
+      setCurrentPlan(plan as any);
+      router.replace('/(tabs)');
+    } catch (error) {
+      console.error('Failed to generate plan:', error);
+    }
   };
   
   const isNextDisabled = () => {
