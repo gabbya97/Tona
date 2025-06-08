@@ -10,9 +10,11 @@ export interface Exercise {
 }
 
 export interface Workout {
+  id: string;
   day: number; // 0-6 for day of week
   name: string;
   type: string;
+  focus: string;
   duration?: number;
   exercises: Exercise[];
 }

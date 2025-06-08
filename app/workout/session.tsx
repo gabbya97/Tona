@@ -31,13 +31,13 @@ export default function WorkoutSessionScreen() {
   const nextIndex = completedThisWeek.length + skippedCount;
 
   const params = useLocalSearchParams<{ id?: string }>();
-  const paramIndex = params?.id ? parseInt(Array.isArray(params.id) ? params.id[0] : params.id, 10) : NaN;
-  const selectedIndex = !isNaN(paramIndex) ? paramIndex : nextIndex;
+  const paramId = params?.id ? (Array.isArray(params.id) ? params.id[0] : params.id) : undefined;
 
-  const selectedWorkout =
-    currentPlan?.workouts && selectedIndex < currentPlan.workouts.length
-      ? currentPlan.workouts[selectedIndex]
-      : null;
+  const selectedWorkout = paramId
+    ? currentPlan?.workouts?.find(w => w.id === paramId) || null
+    : currentPlan?.workouts && nextIndex < currentPlan.workouts.length
+    ? currentPlan.workouts[nextIndex]
+    : null;
   
   const [workoutStarted, setWorkoutStarted] = useState(false);
   const [workoutCompleted, setWorkoutCompleted] = useState(false);
@@ -184,7 +184,7 @@ export default function WorkoutSessionScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.noWorkoutContainer}>
-          <Text style={styles.noWorkoutText}>No workouts left for this week.</Text>
+          <Text style={styles.noWorkoutText}>Workout not found.</Text>
           <Button
             title="Go Back"
             onPress={() => router.back()}

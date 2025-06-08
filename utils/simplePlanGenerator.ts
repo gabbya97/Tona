@@ -205,8 +205,29 @@ const defaultPlan: WorkoutPlan = {
 
 export function generateSimplePlan(input: PlanInput): WorkoutPlan {
   const { goal, location, daysPerWeek, workoutDuration } = input;
-  return (
-    templates[goal]?.[location]?.[daysPerWeek]?.[workoutDuration] || defaultPlan
-  );
+  const plan =
+    templates[goal]?.[location]?.[daysPerWeek]?.[workoutDuration] || defaultPlan;
+
+  const planId = plan.id || Date.now().toString();
+  return {
+    ...plan,
+    id: planId,
+    workouts: plan.workouts.map((w, idx) => {
+      let focus = 'Full Body';
+      const type = w.type.toLowerCase();
+      if (type.includes('glute')) focus = 'Glutes';
+      else if (type.includes('upper')) focus = 'Upper Body';
+      else if (type.includes('lower')) focus = 'Lower Body';
+      else if (type.includes('push')) focus = 'Push';
+      else if (type.includes('pull')) focus = 'Pull';
+      else if (type.includes('leg')) focus = 'Legs';
+
+      return {
+        ...w,
+        id: `${planId}_${idx}`,
+        focus,
+      };
+    }),
+  };
 }
 

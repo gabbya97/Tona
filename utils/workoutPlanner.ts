@@ -274,6 +274,7 @@ export function generateWorkoutPlan(userProfile: UserProfile): WorkoutPlan {
   })();
   
   // Generate workouts for each day
+  const planId = Date.now().toString();
   const workouts: Workout[] = workoutDays.map((day, index) => {
     const workoutName = workoutTypes[index];
     const exerciseCategory = workoutCategories[index];
@@ -329,11 +330,22 @@ export function generateWorkoutPlan(userProfile: UserProfile): WorkoutPlan {
       workoutExercises = [...workoutExercises, ...extra];
     }
     
+    // Determine focus area
+    let focus = 'Full Body';
+    if (workoutName.toLowerCase().includes('glute')) focus = 'Glutes';
+    else if (exerciseCategory === 'upper') focus = 'Upper Body';
+    else if (exerciseCategory === 'lower') focus = 'Lower Body';
+    else if (['push', 'pull', 'legs'].includes(exerciseCategory)) {
+      focus = capitalizeFirstLetter(exerciseCategory);
+    }
+
     // Create the workout
     return {
+      id: `${planId}_${index}`,
       day,
       name: `${workoutTypes[index]} Workout`,
       type: workoutTypes[index],
+      focus,
       duration: userProfile.workoutDuration,
       exercises: workoutExercises,
     };
