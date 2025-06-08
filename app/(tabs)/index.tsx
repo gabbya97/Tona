@@ -112,7 +112,7 @@ export default function HomeScreen() {
                   onPress={() =>
                     router.push({
                       pathname: '/workout/session',
-                      params: { id: index.toString() }
+                      params: { id: item.workout.id }
                     })
                   }
                 />
