@@ -1,4 +1,9 @@
+import OpenAI from 'openai';
 import { OPENAI_API_KEY } from '@env';
+
+const openai = new OpenAI({
+  apiKey: OPENAI_API_KEY,
+});
 
 export interface PlanData {
   goal: string;
@@ -22,36 +27,53 @@ export interface AIWorkoutPlan {
 export async function generateAIWorkoutPlan(planData: PlanData): Promise<AIWorkoutPlan> {
   const { goal, workoutLocation, daysPerWeek, workoutDuration, trainingFocus } = planData;
 
-  console.log("api key is: ", OPENAI_API_KEY)
+  const prompt = `
+Create a ${goal.toLowerCase()} workout plan for a woman training ${daysPerWeek} days per week.
+Focus areas: ${trainingFocus.join(', ')}.
+Session duration: ${workoutDuration} minutes.
+Location: ${workoutLocation === 'home' ? 'home (limited equipment)' : 'gym (full equipment)'}.
 
-  const prompt = `\n  Create a ${goal} workout plan for a woman training ${daysPerWeek} days per week. Focusing on ${trainingFocus}.\n  Each session should be ${workoutDuration} minutes long, to be done at ${workoutLocation}.\n  Please format the output as an array of workouts with the following structure:\n  [\n    {\n      "name": "Workout A",\n      "targetMuscles": "Glutes, Hamstrings",\n      "description": "A lower body workout focusing on glute bridges and RDLs."\n    }\n  ]\n  `;
+Please return the result in this exact JSON format:
 
-  console.log("generated prompt is", prompt)
+[
+  {
+    "name": "Workout A",
+    "targetMuscles": "Glutes, Hamstrings",
+    "description": "A lower body session including glute bridges and RDLs."
+  },
+  {
+    "name": "Workout B",
+    "targetMuscles": "Back, Biceps",
+    "description": "Upper body strength work using dumbbells and pull exercises."
+  }
+]
+`;
 
   try {
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.7,
-      }),
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [{ role: 'user', content: prompt.trim() }],
+      temperature: 0.7,
     });
 
-    const data = await res.json();
-    const responseText = data.choices?.[0]?.message?.content || '[]';
+    const content = completion.choices[0].message.content;
 
-    const parsedPlan: AIWorkout[] = JSON.parse(responseText);
+    let workouts = [] as AIWorkout[];
+    try {
+      workouts = JSON.parse(content || '[]');
+    } catch (parseError) {
+      console.error('❌ Failed to parse AI response:', parseError);
+    }
+
     return {
-      workouts: parsedPlan,
       createdAt: new Date().toISOString(),
+      workouts: workouts || [],
     };
   } catch (error) {
-    console.error('AI workout generation failed:', error);
-    throw new Error('Unable to generate workout plan');
+    console.error('❌ Failed to fetch AI workout plan:', error);
+    return {
+      createdAt: new Date().toISOString(),
+      workouts: [],
+    };
   }
 }
