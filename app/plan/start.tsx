@@ -13,6 +13,7 @@ import DaysSelector from '@/components/plan/DaysSelector';
 import DurationSelector from '@/components/plan/DurationSelector';
 import FocusAreasSelector from '@/components/plan/FocusAreasSelector';
 import { ArrowLeft } from 'lucide-react-native';
+import { saveWorkoutPlan } from '@/utils/storage';
 
 export default function PlanStartScreen() {
   const router = useRouter();
@@ -52,8 +53,11 @@ export default function PlanStartScreen() {
         workoutLocation: planData.location as any,
         daysPerWeek: planData.daysPerWeek,
         workoutDuration: planData.sessionDuration,
+        trainingFocus: planData.trainingFocus
       });
+      console.log('AI-generated plan:', plan); 
       setCurrentPlan(plan as any);
+      await saveWorkoutPlan(plan);
       router.replace('/(tabs)');
     } catch (error) {
       console.error('Failed to generate plan:', error);

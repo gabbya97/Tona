@@ -1,4 +1,5 @@
-import React from 'react';
+import { getWorkoutPlan } from '@/utils/storage';
+import React, {useEffect} from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -50,7 +51,18 @@ export default function HomeScreen() {
       return { workout: w, status };
     }) || [];
 
-  
+  const { setCurrentPlan } = useWorkoutStore();
+
+useEffect(() => {
+  const loadPlan = async () => {
+    const storedPlan = await getWorkoutPlan();
+    if (storedPlan) {
+      setCurrentPlan(storedPlan);
+    }
+  };
+  loadPlan();
+}, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.content}>

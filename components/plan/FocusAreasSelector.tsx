@@ -9,9 +9,9 @@ interface FocusAreasSelectorProps {
 
 const FocusAreasSelector: React.FC<FocusAreasSelectorProps> = ({ selected, onSelect }) => {
   const areas = [
-    { id: 'glutes_legs', title: 'Glutes and Legs' },
+    { id: 'glutes_and_legs', title: 'Glutes and Legs' },
     { id: 'upper_body', title: 'Upper Body (Arms, Shoulders, Back)' },
-    { id: 'core_abs', title: 'Core and Abs' },
+    { id: 'core_and_abs', title: 'Core and Abs' },
     { id: 'mobility', title: 'Mobility and Flexibility' },
     { id: 'conditioning', title: 'Conditioning' },
     { id: 'full_body', title: 'Full Body Strength' },

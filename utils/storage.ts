@@ -99,3 +99,20 @@ export async function clearCurrentPlan(): Promise<void> {
     console.error('Error clearing workout plan:', error);
   }
 }
+export const saveWorkoutPlan = async (plan: any) => {
+  try {
+    await AsyncStorage.setItem('userWorkoutPlan', JSON.stringify(plan));
+  } catch (error) {
+    console.error('Error saving workout plan:', error);
+  }
+};
+
+export const getWorkoutPlan = async () => {
+  try {
+    const storedPlan = await AsyncStorage.getItem('userWorkoutPlan');
+    return storedPlan ? JSON.parse(storedPlan) : null;
+  } catch (error) {
+    console.error('Error loading workout plan:', error);
+    return null;
+  }
+};

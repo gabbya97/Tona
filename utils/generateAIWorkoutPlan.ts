@@ -5,6 +5,7 @@ export interface PlanData {
   workoutLocation: string;
   daysPerWeek: number;
   workoutDuration: number;
+  trainingFocus: string[];
 }
 
 export interface AIWorkout {
@@ -19,9 +20,13 @@ export interface AIWorkoutPlan {
 }
 
 export async function generateAIWorkoutPlan(planData: PlanData): Promise<AIWorkoutPlan> {
-  const { goal, workoutLocation, daysPerWeek, workoutDuration } = planData;
+  const { goal, workoutLocation, daysPerWeek, workoutDuration, trainingFocus } = planData;
 
-  const prompt = `\n  Create a ${goal} workout plan for a woman training ${daysPerWeek} days per week.\n  Each session should be ${workoutDuration} minutes long, to be done at ${workoutLocation}.\n  Please format the output as an array of workouts with the following structure:\n  [\n    {\n      "name": "Workout A",\n      "targetMuscles": "Glutes, Hamstrings",\n      "description": "A lower body workout focusing on glute bridges and RDLs."\n    }\n  ]\n  `;
+  console.log("api key is: ", OPENAI_API_KEY)
+
+  const prompt = `\n  Create a ${goal} workout plan for a woman training ${daysPerWeek} days per week. Focusing on ${trainingFocus}.\n  Each session should be ${workoutDuration} minutes long, to be done at ${workoutLocation}.\n  Please format the output as an array of workouts with the following structure:\n  [\n    {\n      "name": "Workout A",\n      "targetMuscles": "Glutes, Hamstrings",\n      "description": "A lower body workout focusing on glute bridges and RDLs."\n    }\n  ]\n  `;
+
+  console.log("generated prompt is", prompt)
 
   try {
     const res = await fetch('https://api.openai.com/v1/chat/completions', {

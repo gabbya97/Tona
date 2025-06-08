@@ -1,7 +1,8 @@
 import OpenAI from 'openai';
+import { OPENAI_API_KEY } from '@env';
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: OPENAI_API_KEY
 });
 
 /**
@@ -36,6 +37,7 @@ export async function generatePlan(
   const content = completion.choices[0]?.message?.content ?? '';
 
   try {
+    console.log("generating plan")
     return JSON.parse(content);
   } catch (err) {
     console.error('Failed to parse plan from OpenAI:', err);
